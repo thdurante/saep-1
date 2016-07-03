@@ -17,7 +17,7 @@ public class DBManager {
      */
     private final String servidor = "server.thiagodurante.com.br";
     private final int porta = 27017;
-    private final String database = "saep";
+    private final String database = "saep-sandbox";
 
     /**
      * Identificador da Collection a ser recuperada.
