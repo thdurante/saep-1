@@ -7,7 +7,7 @@
     <!-- mvn javadoc:aggregate-jar (javadoc em jar) -->
     <!-- mvn source:jar (os fontes em jar)          -->
 
-    <groupId>com.github.kyriosdata.saep</groupId>
+    <groupId>com.github.kyriosdata</groupId>
     <artifactId>saep-dominio</artifactId>
     <packaging>jar</packaging>
     <version>1.0.0</version>
@@ -47,6 +47,17 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+
     <build>
         <pluginManagement>
             <plugins>
@@ -60,7 +71,6 @@
                 </plugin>
             </plugins>
         </pluginManagement>
-
     </build>
 
     <dependencies>
@@ -69,19 +79,7 @@
             <artifactId>junit</artifactId>
             <version>4.12</version>
         </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.7.5</version>
-        </dependency>
 
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <version>2.7.5</version>
-        </dependency>
-
-        <!-- http://mvnrepository.com/artifact/com.udojava/EvalEx -->
         <dependency>
             <groupId>com.udojava</groupId>
             <artifactId>EvalEx</artifactId>
@@ -140,25 +138,12 @@
                 </plugins>
             </build>
         </profile>
+
+        <!-- PROFILE: release -->
         <profile>
             <id>release</id>
             <build>
                 <plugins>
-
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.5</version>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
 
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
@@ -167,6 +152,7 @@
                         <executions>
                             <execution>
                                 <id>package-sources</id>
+                                <phase>package</phase>
                                 <goals>
                                     <goal>jar</goal>
                                 </goals>
@@ -190,6 +176,21 @@
                     </plugin>
 
                     <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.5</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
                         <groupId>org.sonatype.plugins</groupId>
                         <artifactId>nexus-staging-maven-plugin</artifactId>
                         <version>1.6.3</version>
@@ -197,7 +198,7 @@
                         <configuration>
                             <serverId>ossrh</serverId>
                             <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                            <autoReleaseAfterClose>false</autoReleaseAfterClose>
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
                         </configuration>
                         <executions>
                             <execution>
@@ -212,17 +213,6 @@
                     </plugin>
                 </plugins>
             </build>
-
-            <distributionManagement>
-                <repository>
-                    <id>ossrh</id>
-                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-                </repository>
-                <snapshotRepository>
-                    <id>ossrh</id>
-                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-                </snapshotRepository>
-            </distributionManagement>
 
         </profile>
     </profiles>
