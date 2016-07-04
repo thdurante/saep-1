@@ -8,9 +8,11 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
+import com.mongodb.client.result.DeleteResult;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.mongodb.client.model.Filters.eq;
@@ -39,6 +41,9 @@ public class RepositorioDeResolucoes implements ResolucaoRepository {
         this.gson = new GsonBuilder().serializeNulls().setPrettyPrinting().create();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Resolucao byId(String id) {
         Document document = null;
@@ -58,6 +63,9 @@ public class RepositorioDeResolucoes implements ResolucaoRepository {
         return gson.fromJson(document.toJson(), Resolucao.class);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String persiste(Resolucao resolucao) {
         if (resolucao.getNome() == null || resolucao.getNome().isEmpty()) {
@@ -87,31 +95,64 @@ public class RepositorioDeResolucoes implements ResolucaoRepository {
         return id.toString();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean remove(String identificador) {
+        ObjectId objectId = new ObjectId(identificador);
+        DeleteResult deleteResult = resolucoesCollection.deleteOne(eq("_id", objectId));
+
+        if (deleteResult.wasAcknowledged() && deleteResult.getDeletedCount() > 0) {
+            return true;
+        }
         return false;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<String> resolucoes() {
-        return null;
+        List<String> identificadoresDasResolucoes = new ArrayList<>();
+        Document document;
+
+        MongoCursor cursor = resolucoesCollection.find().iterator();
+        while (cursor.hasNext()) {
+            document = (Document) cursor.next();
+            identificadoresDasResolucoes.add(document.get("_id").toString());
+        }
+
+        return identificadoresDasResolucoes;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void persisteTipo(Tipo tipo) {
 
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void removeTipo(String codigo) {
 
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Tipo tipoPeloCodigo(String codigo) {
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Tipo> tiposPeloNome(String nome) {
         return null;

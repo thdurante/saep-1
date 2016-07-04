@@ -13,9 +13,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 public class RepositorioDeResolucoesTest {
 
@@ -82,6 +80,22 @@ public class RepositorioDeResolucoesTest {
         Calendar c = Calendar.getInstance();
         c.set(2013, Calendar.SEPTEMBER, 27);
         return c.getTime();
+    }
+
+    /**
+     * Recupera uma Resolução válida, ou seja, que satisfaz a todas as condições
+     * determinadas por seu construtor.
+     * @return Resolução válida.
+     */
+    private Resolucao getResolucaoValida() {
+        return new Resolucao(
+            "CONSUNI No 32/2013",
+            "Dispõe sobre normas para avaliação de pessoal docente em relação ao " +
+            "estágio probatório, à progressão funcional e à promoção na Carreira " +
+            "do Magistério Superior, e revoga as disposições em contrário.",
+            getDataAprovacao(),
+            getListaDeRegras()
+        );
     }
 
     /*
@@ -152,14 +166,7 @@ public class RepositorioDeResolucoesTest {
 
     @Test
     public void persisteResolucaoValida() {
-        Resolucao resolucao = new Resolucao(
-            "CONSUNI No 32/2013",
-            "Dispõe sobre normas para avaliação de pessoal docente em relação ao " +
-            "estágio probatório, à progressão funcional e à promoção na Carreira " +
-            "do Magistério Superior, e revoga as disposições em contrário.",
-            getDataAprovacao(),
-            getListaDeRegras()
-        );
+        Resolucao resolucao = getResolucaoValida();
         String identificador = repositorioDeResolucoes.persiste(resolucao);
         assertNotNull("id retornado não deve ser null", identificador);
     }
@@ -183,5 +190,32 @@ public class RepositorioDeResolucoesTest {
         Resolucao resolucao = repositorioDeResolucoes.byId(id);
 
         assertNull("resolução não encontrada, retorno deve ser null", resolucao);
+    }
+
+    @Test
+    public void listaIdsDeResolucoes() {
+        List<String> identificadoresDasResolucoes = repositorioDeResolucoes.resolucoes();
+
+        System.out.println("Total de Resoluções: " +identificadoresDasResolucoes.size());
+        for (String s : identificadoresDasResolucoes) {
+            System.out.println(s);
+        }
+
+        assertNotNull("a lista de ids não deve ser null", identificadoresDasResolucoes);
+        assertNotEquals("a lista de ids não deve ser vazia", 0, identificadoresDasResolucoes.size());
+    }
+
+    @Test
+    public void removeResolucaoValida() {
+        String id = repositorioDeResolucoes.persiste(getResolucaoValida());
+        Boolean resultadoRemocao = repositorioDeResolucoes.remove(id);
+        assertEquals("deve ser true se a resolucao foi deletada", true, resultadoRemocao);
+    }
+
+    @Test
+    public void removeResolucaoInexistente() {
+        String id = "3779de2fe0e49916ef449f23";
+        Boolean resultadoRemocao = repositorioDeResolucoes.remove(id);
+        assertEquals("deve ser false se a resolucao não foi deletada", false, resultadoRemocao);
     }
 }
