@@ -194,6 +194,14 @@ public class RepositorioDeResolucoes implements ResolucaoRepository {
     }
 
     /**
+     * Método chamado no tearDown dos testes para limpar a base de dados.
+     */
+    public void clearDB() {
+        resolucoesCollection.deleteMany(new Document());
+        tiposCollection.deleteMany(new Document());
+    }
+
+    /**
      * Recupera a lista de todas as Resoluções e verifica para cada uma delas se
      * alguma de suas regras possui o atributo tipoRelato igual ao codigo (ou id) do
      * Tipo que se deseja deletar.

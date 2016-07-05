@@ -1,6 +1,7 @@
 package br.ufg.inf.es.saep.sandbox.persistencia;
 
 import br.ufg.inf.es.saep.sandbox.dominio.*;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import uk.co.jemos.podam.api.PodamFactory;
@@ -179,6 +180,11 @@ public class RepositorioDeResolucoesTest {
         this.factory = new PodamFactoryImpl();
     }
 
+    @AfterClass
+    public static void tearDown() {
+        new RepositorioDeResolucoes().clearDB();
+    }
+
     @Test(expected = CampoExigidoNaoFornecido.class)
     public void persisteResolucaoSemNenhumAtributoObrigatorio() {
         Resolucao resolucao = new Resolucao(null, null, null, null);
@@ -244,13 +250,13 @@ public class RepositorioDeResolucoesTest {
 
     @Test
     public void recuperaPorId() {
-        String id = "57799feae0e499143ca77b55";
+        String id = repositorioDeResolucoes.persiste(getResolucaoValida());
         Resolucao resolucao = repositorioDeResolucoes.byId(id);
 
         assertNotNull("resolução retornada não deve ser null", resolucao);
         assertNotNull("dataAprovação não deve ser null", resolucao.getDataAprovacao());
 
-        assertEquals("id deve ser igual", "57799feae0e499143ca77b55", resolucao.getId());
+        assertEquals("id deve ser igual", id, resolucao.getId());
         assertEquals("nome deve ser igual", "CONSUNI No 32/2013", resolucao.getNome());
         assertEquals("deve possuir regras", 2, resolucao.getRegras().size());
     }
