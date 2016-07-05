@@ -1,19 +1,17 @@
 package br.ufg.inf.es.saep.sandbox.persistencia;
 
-import br.ufg.inf.es.saep.sandbox.dominio.CampoExigidoNaoFornecido;
-import br.ufg.inf.es.saep.sandbox.dominio.Regra;
-import br.ufg.inf.es.saep.sandbox.dominio.Resolucao;
+import br.ufg.inf.es.saep.sandbox.dominio.*;
 import org.junit.Before;
 import org.junit.Test;
 import uk.co.jemos.podam.api.PodamFactory;
 import uk.co.jemos.podam.api.PodamFactoryImpl;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+
 
 public class RepositorioDeResolucoesTest {
 
@@ -34,17 +32,17 @@ public class RepositorioDeResolucoesTest {
         dependenciasRegra1.add("cha = carga horária anual");
 
         Regra regra1 = new Regra(
-            Regra.EXPRESSAO,                                // tipo
-            "Aulas presenciais na graduação",               // descricao
-            0,                                              // valorMaximo
-            0,                                              // valorMinimo
-            "pontosAPGrad",                                 // variavel
-            "10 * (cha / 32)",                              // expressao
-            null,                                           // entao
-            null,                                           // senao
-            null,                                           // tipoRelato
-            0,                                              // pontosPorItem
-            dependenciasRegra1                              // dependeDe
+                Regra.EXPRESSAO,                                // tipo
+                "Aulas presenciais na graduação",               // descricao
+                0,                                              // valorMaximo
+                0,                                              // valorMinimo
+                "pontosAPGrad",                                 // variavel
+                "10 * (cha / 32)",                              // expressao
+                null,                                           // entao
+                null,                                           // senao
+                null,                                           // tipoRelato
+                0,                                              // pontosPorItem
+                dependenciasRegra1                              // dependeDe
         );
 
         // REGRA 2
@@ -89,13 +87,86 @@ public class RepositorioDeResolucoesTest {
      */
     private Resolucao getResolucaoValida() {
         return new Resolucao(
-            "CONSUNI No 32/2013",
-            "Dispõe sobre normas para avaliação de pessoal docente em relação ao " +
-            "estágio probatório, à progressão funcional e à promoção na Carreira " +
-            "do Magistério Superior, e revoga as disposições em contrário.",
-            getDataAprovacao(),
-            getListaDeRegras()
+                "CONSUNI No 32/2013",
+                "Dispõe sobre normas para avaliação de pessoal docente em relação ao " +
+                "estágio probatório, à progressão funcional e à promoção na Carreira " +
+                "do Magistério Superior, e revoga as disposições em contrário.",
+                getDataAprovacao(),
+                getListaDeRegras()
         );
+    }
+
+    /**
+     * Recupera a lista de atributos do Tipo.
+     * @return Atributos do Tipo.
+     */
+    private Set<Atributo> getAtributosDoTipo() {
+        Set<Atributo> atributos = new HashSet<>();
+        atributos.add(new Atributo("cha", "carga horária anual", Atributo.REAL));
+        return atributos;
+    }
+
+    /**
+     * Recupera uma instância válido de Tipo com valores já setados.
+     * @return A instância de Tipo.
+     */
+    private Tipo getTipoValido1() {
+        Tipo tipo = new Tipo(
+                "APG",
+                "Aula presencial na graduação",
+                "Disciplina ministrada na graduação, apenas na modalidade presencial",
+                getAtributosDoTipo()
+        );
+        return tipo;
+    }
+
+    /**
+     * Recupera uma instância válido de Tipo com valores já setados.
+     * @return A instância de Tipo.
+     */
+    private Tipo getTipoValido2() {
+        Tipo tipo = new Tipo(
+                "AEADG",
+                "Aula do ensino à distância na graduação",
+                "Disciplina ministrada na graduação, apenas na modalidade de ensino à distância",
+                getAtributosDoTipo()
+        );
+        return tipo;
+    }
+
+    /**
+     * Cria e persiste uma {@link Resolucao} teste com uma {@link Regra} que possui o
+     * atributo tipoRelato igual ao id do {@link Tipo} que se deseja remover.
+     */
+    private void persisteResolucaoTesteRemocaoDeTipo() {
+        List<String> dependenciasRegraTeste = new ArrayList<>();
+        dependenciasRegraTeste.add("cha = carga horária anual");
+
+        Regra regraTeste = new Regra(
+                Regra.PONTOS,                                   // tipo
+                "desc",                                         // descricao
+                10,                                             // valorMaximo
+                0,                                              // valorMinimo
+                "pontosAPGrad",                                 // variavel
+                "10 * (cha / 32)",                              // expressao
+                null,                                           // entao
+                null,                                           // senao
+                "AEADG",                                        // tipoRelato
+                10,                                             // pontosPorItem
+                dependenciasRegraTeste                          // dependeDe
+        );
+
+        List<Regra> regras = new ArrayList<>();
+        regras.add(regraTeste);
+
+        Resolucao resolucao = new Resolucao(
+                "Teste remoção de tipo utilizado",
+                "Descrição",
+                getDataAprovacao(),
+                regras
+        );
+
+        repositorioDeResolucoes.persiste(resolucao);
     }
 
     /*
@@ -217,5 +288,72 @@ public class RepositorioDeResolucoesTest {
         String id = "3779de2fe0e49916ef449f23";
         Boolean resultadoRemocao = repositorioDeResolucoes.remove(id);
         assertEquals("deve ser false se a resolucao não foi deletada", false, resultadoRemocao);
+    }
+
+    @Test
+    public void persisteTipoValido() {
+        Tipo tipo1 = getTipoValido1();
+        assertEquals("id do tipo deve ser o mesmo", "APG", tipo1.getId());
+        assertEquals("nome do tipo deve ser o mesmo", "Aula presencial na graduação", tipo1.getNome());
+        assertEquals("descricao do tipo deve ser a mesma", "Disciplina ministrada na graduação, apenas na modalidade presencial", tipo1.getDescricao());
+        assertEquals("tipo deve ter somente 1 atributo", 1, tipo1.getAtributos().size());
+
+        Tipo tipo2 = getTipoValido2();
+        assertEquals("id do tipo deve ser o mesmo", "AEADG", tipo2.getId());
+        assertEquals("nome do tipo deve ser o mesmo", "Aula do ensino à distância na graduação", tipo2.getNome());
+        assertEquals("descricao do tipo deve ser a mesma", "Disciplina ministrada na graduação, apenas na modalidade de ensino à distância", tipo2.getDescricao());
+        assertEquals("tipo deve ter somente 1 atributo", 1, tipo2.getAtributos().size());
+
+        repositorioDeResolucoes.persisteTipo(tipo1);
+        repositorioDeResolucoes.persisteTipo(tipo2);
+    }
+
+    @Test
+    public void recuperaTipoPeloCodigoExistente() {
+        Tipo tipo1 = repositorioDeResolucoes.tipoPeloCodigo("APG");
+        assertNotNull("não deve ser null", tipo1);
+        assertEquals("id do tipo deve ser o mesmo", "APG", tipo1.getId());
+        assertEquals("nome do tipo deve ser o mesmo", "Aula presencial na graduação", tipo1.getNome());
+        assertEquals("descricao do tipo deve ser a mesma", "Disciplina ministrada na graduação, apenas na modalidade presencial", tipo1.getDescricao());
+        assertEquals("tipo deve ter somente 1 atributo", 1, tipo1.getAtributos().size());
+
+        Tipo tipo2 = repositorioDeResolucoes.tipoPeloCodigo("AEADG");
+        assertNotNull("não deve ser null", tipo2);
+        assertEquals("id do tipo deve ser o mesmo", "AEADG", tipo2.getId());
+        assertEquals("nome do tipo deve ser o mesmo", "Aula do ensino à distância na graduação", tipo2.getNome());
+        assertEquals("descricao do tipo deve ser a mesma", "Disciplina ministrada na graduação, apenas na modalidade de ensino à distância", tipo2.getDescricao());
+        assertEquals("tipo deve ter somente 1 atributo", 1, tipo2.getAtributos().size());
+    }
+
+    @Test
+    public void recuperaTipoPeloCodigoInvalido() {
+        Tipo tipo = repositorioDeResolucoes.tipoPeloCodigo("ABCDE");
+        assertEquals("tipo deve ser null", null, tipo);
+    }
+
+    @Test
+    public void removeTipoPeloCodigo() {
+        repositorioDeResolucoes.removeTipo("APG");
+    }
+
+    @Test(expected = ResolucaoUsaTipoException.class)
+    public void removeTipoQueEstaSendoUsadoPorUmaResolucao() {
+        persisteResolucaoTesteRemocaoDeTipo();
+        repositorioDeResolucoes.removeTipo("AEADG");
+    }
+
+    @Test
+    public void recuperaListaDeTiposPorNome() {
+        List<Tipo> tiposRetornados1 = repositorioDeResolucoes.tiposPeloNome("graduação");
+        assertNotNull("não deve ser null", tiposRetornados1);
+        assertThat("mais de um tipo retornado", tiposRetornados1.size(), is(greaterThan(0)));
+
+        List<Tipo> tiposRetornados2 = repositorioDeResolucoes.tiposPeloNome("à distância");
+        assertNotNull("não deve ser null", tiposRetornados2);
+        assertThat("mais de um tipo retornado", tiposRetornados1.size(), is(greaterThan(0)));
+
+        List<Tipo> tiposRetornados3 = repositorioDeResolucoes.tiposPeloNome("abobrinha");
+        assertNotNull("não deve ser null", tiposRetornados3);
+        assertEquals("deve ser vazio", 0, tiposRetornados3.size());
     }
 }

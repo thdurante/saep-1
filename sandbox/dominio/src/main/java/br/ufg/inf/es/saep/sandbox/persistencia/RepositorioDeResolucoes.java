@@ -1,9 +1,6 @@
 package br.ufg.inf.es.saep.sandbox.persistencia;
 
-import br.ufg.inf.es.saep.sandbox.dominio.CampoExigidoNaoFornecido;
-import br.ufg.inf.es.saep.sandbox.dominio.Resolucao;
-import br.ufg.inf.es.saep.sandbox.dominio.ResolucaoRepository;
-import br.ufg.inf.es.saep.sandbox.dominio.Tipo;
+import br.ufg.inf.es.saep.sandbox.dominio.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.mongodb.client.MongoCollection;
@@ -14,6 +11,7 @@ import org.bson.types.ObjectId;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import static com.mongodb.client.model.Filters.eq;
 
@@ -23,9 +21,14 @@ import static com.mongodb.client.model.Filters.eq;
 public class RepositorioDeResolucoes implements ResolucaoRepository {
 
     /**
-     * Representação da collection específica advinda do banco de dados.
+     * Representação da collection Resolucoes advinda do banco de dados.
      */
     private MongoCollection resolucoesCollection;
+
+    /**
+     * Representação da collection Tipos advinda do banco de dados.
+     */
+    private MongoCollection tiposCollection;
 
     /**
      * Objeto para serialização e parse de documentos JSON.
@@ -33,11 +36,12 @@ public class RepositorioDeResolucoes implements ResolucaoRepository {
     private Gson gson;
 
     /**
-     * Cria um novo repositório de Resoluções, já abrindo a conexão com o
+     * Cria um novo repositório de Resoluções e Tipos, já abrindo a conexão com o
      * banco de dados e inicializando o serializador/parser Gson.
      */
     public RepositorioDeResolucoes() {
         this.resolucoesCollection = new DBManager("resolucoes").abrirConexao();
+        this.tiposCollection = new DBManager("tipos").abrirConexao();
         this.gson = new GsonBuilder().serializeNulls().setPrettyPrinting().create();
     }
 
@@ -131,7 +135,8 @@ public class RepositorioDeResolucoes implements ResolucaoRepository {
      */
     @Override
     public void persisteTipo(Tipo tipo) {
-
+        Document tipoDocument = Document.parse(gson.toJson(tipo));
+        tiposCollection.insertOne(tipoDocument);
     }
 
     /**
@@ -139,7 +144,8 @@ public class RepositorioDeResolucoes implements ResolucaoRepository {
      */
     @Override
     public void removeTipo(String codigo) {
-
+        verificaSeTipoUsadoPorAlgumaResolucao(codigo); // Se for usado, a exception já é lançada
+        tiposCollection.deleteOne(eq("id", codigo));
     }
 
     /**
@@ -147,7 +153,21 @@ public class RepositorioDeResolucoes implements ResolucaoRepository {
      */
     @Override
     public Tipo tipoPeloCodigo(String codigo) {
-        return null;
+        Tipo tipo;
+        Document document = null;
+
+        MongoCursor cursor = tiposCollection.find(eq("id", codigo)).iterator();
+        if (!cursor.hasNext()) {
+            return null;
+        }
+
+        while (cursor.hasNext()) {
+            document = (Document) cursor.next();
+            document.remove("_id");
+        }
+
+        tipo = gson.fromJson(document.toJson(), Tipo.class);
+        return tipo;
     }
 
     /**
@@ -155,6 +175,50 @@ public class RepositorioDeResolucoes implements ResolucaoRepository {
      */
     @Override
     public List<Tipo> tiposPeloNome(String nome) {
-        return null;
+        List<Tipo> tiposRecuperados = new ArrayList<>();
+        Tipo tipo;
+        Document document;
+
+        Pattern regex = Pattern.compile(nome);
+
+        MongoCursor cursor = tiposCollection.find(eq("nome", regex)).iterator();
+        while (cursor.hasNext()) {
+            document = (Document) cursor.next();
+            document.remove("_id");
+            tipo = gson.fromJson(document.toJson(), Tipo.class);
+
+            tiposRecuperados.add(tipo);
+        }
+
+        return tiposRecuperados;
+    }
+
+    /**
+     * Recupera a lista de todas as Resoluções e verifica para cada uma delas se
+     * alguma de suas regras possui o atributo tipoRelato igual ao codigo (ou id) do
+     * Tipo que se deseja deletar.
+     * <p>Caso alguma {@link Regra} de alguma {@link Resolucao}, possua o atributo
+     * tipoRelato == codigo do {@link Tipo}, então uma exception {@link ResolucaoUsaTipoException}
+     * é lançada.</p>
+     * @param codigo O código ou id do {@link Tipo} que se deseja remover.
+     */
+    private void verificaSeTipoUsadoPorAlgumaResolucao(String codigo) {
+        Document document;
+        Resolucao resolucao;
+
+        MongoCursor cursor = resolucoesCollection.find().iterator();
+        while (cursor.hasNext()) {
+            document = (Document) cursor.next();
+            document.put("id", document.get("_id").toString());
+            document.remove("_id");
+            resolucao = gson.fromJson(document.toJson(), Resolucao.class);
+
+            List<Regra> regras = resolucao.getRegras();
+            for (Regra r : regras) {
+                if (codigo.equals(r.getTipoRelato())) {
+                    throw new ResolucaoUsaTipoException("A Resolução [ID: " +resolucao.getId() + "] usa o Tipo.");
+                }
+            }
+        }
     }
 }
