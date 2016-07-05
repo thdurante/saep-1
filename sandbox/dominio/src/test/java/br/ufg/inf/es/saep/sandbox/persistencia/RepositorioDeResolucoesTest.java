@@ -1,6 +1,7 @@
 package br.ufg.inf.es.saep.sandbox.persistencia;
 
 import br.ufg.inf.es.saep.sandbox.dominio.*;
+import org.bson.types.ObjectId;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
@@ -87,7 +88,9 @@ public class RepositorioDeResolucoesTest {
      * @return Resolução válida.
      */
     private Resolucao getResolucaoValida() {
+        String id = UUID.randomUUID().toString();
         return new Resolucao(
+                id,
                 "CONSUNI No 32/2013",
                 "Dispõe sobre normas para avaliação de pessoal docente em relação ao " +
                 "estágio probatório, à progressão funcional e à promoção na Carreira " +
@@ -160,7 +163,9 @@ public class RepositorioDeResolucoesTest {
         List<Regra> regras = new ArrayList<>();
         regras.add(regraTeste);
 
+        String id = UUID.randomUUID().toString();
         Resolucao resolucao = new Resolucao(
+                id,
                 "Teste remoção de tipo utilizado",
                 "Descrição",
                 getDataAprovacao(),
@@ -187,56 +192,78 @@ public class RepositorioDeResolucoesTest {
 
     @Test(expected = CampoExigidoNaoFornecido.class)
     public void persisteResolucaoSemNenhumAtributoObrigatorio() {
-        Resolucao resolucao = new Resolucao(null, null, null, null);
+        Resolucao resolucao = new Resolucao(null, null, null, null, null);
         repositorioDeResolucoes.persiste(resolucao);
     }
 
     @Test(expected = CampoExigidoNaoFornecido.class)
     public void persisteResolucaoSemId() {
         Resolucao resolucao = new Resolucao(
-            null,
-            "Dispõe sobre normas para avaliação de pessoal docente em relação ao " +
-            "estágio probatório, à progressão funcional e à promoção na Carreira " +
-            "do Magistério Superior, e revoga as disposições em contrário.",
-            getDataAprovacao(),
-            getListaDeRegras()
+                null,
+                "CONSUNI No 32/2013",
+                "Dispõe sobre normas para avaliação de pessoal docente em relação ao " +
+                "estágio probatório, à progressão funcional e à promoção na Carreira " +
+                "do Magistério Superior, e revoga as disposições em contrário.",
+                getDataAprovacao(),
+                getListaDeRegras()
+        );
+        repositorioDeResolucoes.persiste(resolucao);
+    }
+
+    @Test(expected = CampoExigidoNaoFornecido.class)
+    public void persisteResolucaoSemNome() {
+        String id = UUID.randomUUID().toString();
+        Resolucao resolucao = new Resolucao(
+                id,
+                null,
+                "Dispõe sobre normas para avaliação de pessoal docente em relação ao " +
+                        "estágio probatório, à progressão funcional e à promoção na Carreira " +
+                        "do Magistério Superior, e revoga as disposições em contrário.",
+                getDataAprovacao(),
+                getListaDeRegras()
         );
         repositorioDeResolucoes.persiste(resolucao);
     }
 
     @Test(expected = CampoExigidoNaoFornecido.class)
     public void persisteResolucaoSemDescricao() {
+        String id = UUID.randomUUID().toString();
         Resolucao resolucao = new Resolucao(
-            "CONSUNI No 32/2013",
-            null,
-            getDataAprovacao(),
-            getListaDeRegras()
+                id,
+                "CONSUNI No 32/2013",
+                null,
+                getDataAprovacao(),
+                getListaDeRegras()
         );
         repositorioDeResolucoes.persiste(resolucao);
     }
 
     @Test(expected = CampoExigidoNaoFornecido.class)
     public void persisteResolucaoSemDataAprovacao() {
+        String id = UUID.randomUUID().toString();
         Resolucao resolucao = new Resolucao(
-            "CONSUNI No 32/2013",
-            "Dispõe sobre normas para avaliação de pessoal docente em relação ao " +
-            "estágio probatório, à progressão funcional e à promoção na Carreira " +
-            "do Magistério Superior, e revoga as disposições em contrário.",
-            null,
-            getListaDeRegras()
+                id,
+                "CONSUNI No 32/2013",
+                "Dispõe sobre normas para avaliação de pessoal docente em relação ao " +
+                "estágio probatório, à progressão funcional e à promoção na Carreira " +
+                "do Magistério Superior, e revoga as disposições em contrário.",
+                null,
+                getListaDeRegras()
         );
         repositorioDeResolucoes.persiste(resolucao);
     }
 
     @Test(expected = CampoExigidoNaoFornecido.class)
     public void persisteResolucaoSemRegras() {
+        String id = UUID.randomUUID().toString();
         Resolucao resolucao = new Resolucao(
-            "CONSUNI No 32/2013",
-            "Dispõe sobre normas para avaliação de pessoal docente em relação ao " +
-            "estágio probatório, à progressão funcional e à promoção na Carreira " +
-            "do Magistério Superior, e revoga as disposições em contrário.",
-            getDataAprovacao(),
-            null
+                id,
+                "CONSUNI No 32/2013",
+                "Dispõe sobre normas para avaliação de pessoal docente em relação ao " +
+                "estágio probatório, à progressão funcional e à promoção na Carreira " +
+                "do Magistério Superior, e revoga as disposições em contrário.",
+                getDataAprovacao(),
+                null
         );
         repositorioDeResolucoes.persiste(resolucao);
     }

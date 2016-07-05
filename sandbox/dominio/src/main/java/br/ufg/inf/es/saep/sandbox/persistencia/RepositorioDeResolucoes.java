@@ -51,9 +51,8 @@ public class RepositorioDeResolucoes implements ResolucaoRepository {
     @Override
     public Resolucao byId(String id) {
         Document document = null;
-        ObjectId objectId = new ObjectId(id);
 
-        MongoCursor cursor = resolucoesCollection.find(eq("_id", objectId)).iterator();
+        MongoCursor cursor = resolucoesCollection.find(eq("_id", id)).iterator();
         if (!cursor.hasNext()) {
             return null;
         }
@@ -90,13 +89,12 @@ public class RepositorioDeResolucoes implements ResolucaoRepository {
 
         Document resolucaoDocument = Document.parse(gson.toJson(resolucao));
 
-        ObjectId id = new ObjectId();
-        resolucaoDocument.put("_id", id);
+        resolucaoDocument.put("_id", resolucaoDocument.get("id"));
         resolucaoDocument.remove("id");
 
         resolucoesCollection.insertOne(resolucaoDocument);
 
-        return id.toString();
+        return resolucaoDocument.get("_id").toString();
     }
 
     /**
@@ -104,8 +102,7 @@ public class RepositorioDeResolucoes implements ResolucaoRepository {
      */
     @Override
     public boolean remove(String identificador) {
-        ObjectId objectId = new ObjectId(identificador);
-        DeleteResult deleteResult = resolucoesCollection.deleteOne(eq("_id", objectId));
+        DeleteResult deleteResult = resolucoesCollection.deleteOne(eq("_id", identificador));
 
         if (deleteResult.wasAcknowledged() && deleteResult.getDeletedCount() > 0) {
             return true;
