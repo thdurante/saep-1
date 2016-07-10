@@ -283,4 +283,33 @@ public class RepositorioDePareceresTest {
         assertEquals("lista de notas depois da remoção deve ter tamanho 1", 1, parecer.getNotas().size());
         assertEquals("a justificativa da Nota[0] depois da remoção deve coincidir", "justificativa alteração", parecer.getNotas().get(0).getJustificativa());
     }
+
+    @Test
+    public void atualizaFundamentacaoEmParecerInvalido() {
+        thrown.expect(IdentificadorDesconhecido.class);
+        thrown.expectMessage("id desconhecido");
+
+        String parecerId = "id inexistente";
+        repositorioDePareceres.atualizaFundamentacao(parecerId, "nova fundamentação");
+    }
+
+    @Test
+    public void atualizaFundamentacao() {
+        Parecer parecer;
+
+        // Cria e persiste um parecer
+        String parecerId = UUID.randomUUID().toString();
+        repositorioDePareceres.persisteParecer(getParecerValido(parecerId));
+
+        // Recupera parecer antes da atualização da fundamentação
+        parecer = repositorioDePareceres.byId(parecerId);
+        assertEquals("fundamentacao antes da atualização deve coincidir", "Fundamentação do parecer", parecer.getFundamentacao());
+
+        // Atualiza fundamentação
+        repositorioDePareceres.atualizaFundamentacao(parecerId, "Nova fundamentação");
+
+        // Recupera parecer depois da atualização da fundamentação
+        parecer = repositorioDePareceres.byId(parecerId);
+        assertEquals("fundamentacao depois da atualização deve coincidir", "Nova fundamentação", parecer.getFundamentacao());
+    }
 }

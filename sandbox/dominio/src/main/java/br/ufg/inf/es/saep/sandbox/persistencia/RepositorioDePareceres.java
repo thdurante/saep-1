@@ -100,7 +100,16 @@ public class RepositorioDePareceres implements ParecerRepository {
      */
     @Override
     public void atualizaFundamentacao(String parecer, String fundamentacao) {
+        MongoCollection pareceresCollection = database.abrirConexao("pareceres");
 
+        if (byId(parecer) == null) {
+            throw new IdentificadorDesconhecido("id desconhecido");
+        }
+
+        pareceresCollection.updateOne(
+                new Document("_id", parecer),
+                new Document("$set", new Document("fundamentacao", fundamentacao))
+        );
     }
 
     /**
