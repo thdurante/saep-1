@@ -259,4 +259,28 @@ public class RepositorioDePareceresTest {
                 new Pontuacao("nome", new Valor("valor"))
         );
     }
+
+    @Test
+    public void removeNota() {
+        Parecer parecer;
+
+        // Cria um parecer com uma nota, adiciona uma segunda nota
+        String parecerId = UUID.randomUUID().toString();
+        repositorioDePareceres.persisteParecer(getParecerValido(parecerId));
+        repositorioDePareceres.adicionaNota(parecerId, getSampleNota());
+
+        // Recupera parecer antes da remoção
+        parecer = repositorioDePareceres.byId(parecerId);
+        assertNotNull("lista de notas antes da remoção deve ser diferente de null", parecer.getNotas());
+        assertEquals("lista de notas antes da remoção deve ter tamanho 2", 2, parecer.getNotas().size());
+
+        // Remove
+        repositorioDePareceres.removeNota(parecerId, new Pontuacao("aprovadoProm", new Valor(false)));
+
+        // Recupera parecer depois da remoção
+        parecer = repositorioDePareceres.byId(parecerId);
+        assertNotNull("lista de notas depois da remoção deve ser diferente de null", parecer.getNotas());
+        assertEquals("lista de notas depois da remoção deve ter tamanho 1", 1, parecer.getNotas().size());
+        assertEquals("a justificativa da Nota[0] depois da remoção deve coincidir", "justificativa alteração", parecer.getNotas().get(0).getJustificativa());
+    }
 }

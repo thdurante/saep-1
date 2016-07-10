@@ -68,6 +68,13 @@ public class RepositorioDePareceres implements ParecerRepository {
         if (byId(id) == null) {
             throw new IdentificadorDesconhecido("id desconhecido");
         }
+
+        Document avaliavelOriginalDocument = Document.parse(gson.toJson(original));
+
+        pareceresCollection.updateOne(
+                new Document("_id", id),
+                new Document("$pull", new Document("notas", new Document("original", avaliavelOriginalDocument)))
+        );
     }
 
     /**
