@@ -34,11 +34,11 @@ public class RepositorioDeResolucoesTest {
         dependenciasRegra1.add("cha = carga horária anual");
 
         Regra regra1 = new Regra(
+                "pontosAPGrad",                                 // variavel
                 Regra.EXPRESSAO,                                // tipo
                 "Aulas presenciais na graduação",               // descricao
                 0,                                              // valorMaximo
                 0,                                              // valorMinimo
-                "pontosAPGrad",                                 // variavel
                 "10 * (cha / 32)",                              // expressao
                 null,                                           // entao
                 null,                                           // senao
@@ -52,11 +52,11 @@ public class RepositorioDeResolucoesTest {
         dependenciasRegra2.add("cha = carga horária anual");
 
         Regra regra2 = new Regra(
+                "pontosAEADGrad",                               // variavel
                 Regra.EXPRESSAO,                                // tipo
                 "Aulas de EAD na graduação",                    // descricao
                 0,                                              // valorMaximo
                 0,                                              // valorMinimo
-                "pontosAEADGrad",                               // variavel
                 "10 * (cha / 32)",                              // expressao
                 null,                                           // entao
                 null,                                           // senao
@@ -147,11 +147,11 @@ public class RepositorioDeResolucoesTest {
         dependenciasRegraTeste.add("cha = carga horária anual");
 
         Regra regraTeste = new Regra(
+                "pontosAPGrad",                                 // variavel
                 Regra.PONTOS,                                   // tipo
                 "desc",                                         // descricao
                 10,                                             // valorMaximo
                 0,                                              // valorMinimo
-                "pontosAPGrad",                                 // variavel
                 "10 * (cha / 32)",                              // expressao
                 null,                                           // entao
                 null,                                           // senao
