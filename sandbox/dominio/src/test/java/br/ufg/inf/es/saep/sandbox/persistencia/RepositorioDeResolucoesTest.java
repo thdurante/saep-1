@@ -1,7 +1,6 @@
 package br.ufg.inf.es.saep.sandbox.persistencia;
 
 import br.ufg.inf.es.saep.sandbox.dominio.*;
-import org.bson.types.ObjectId;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
