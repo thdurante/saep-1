@@ -72,7 +72,7 @@ public interface ResolucaoRepository {
      *
      * @see #persiste(Resolucao)
      *
-     * @param identificador O identificador (uso externo) da
+     * @param identificador O identificador único da
      *                      resolução a ser removida.
      *
      * @return O valor {@code true} se a operação foi
@@ -119,7 +119,10 @@ public interface ResolucaoRepository {
 
     /**
      * Recupera a lista de tipos cujos nomes
-     * são similares àquele fornecido.
+     * são similares àquele fornecido. Um nome é
+     * similar àquele do tipo caso contenha o
+     * argumento fornecido. Por exemplo, para o nome
+     * "casa" temos que "asa" é similar.
      *
      * Um nome é dito similar se contém a sequência
      * indicada.
