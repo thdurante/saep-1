@@ -25,7 +25,6 @@ public class RepositorioDePareceres implements ParecerRepository {
      */
     private Gson gson;
 
-
     /**
      * Cria um novo repositório de Pareceres e Radocs, já inicializando o
      * serializador/parser Gson. A conexão com o banco de dados será aberta
@@ -34,12 +33,6 @@ public class RepositorioDePareceres implements ParecerRepository {
     public RepositorioDePareceres() {
         this.gson = new GsonBuilder().serializeNulls().setPrettyPrinting().create();
     }
-
-
-
-
-
-
 
     /**
      * {@inheritDoc}
