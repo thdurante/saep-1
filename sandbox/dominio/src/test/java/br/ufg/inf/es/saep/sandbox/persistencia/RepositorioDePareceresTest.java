@@ -12,9 +12,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 public class RepositorioDePareceresTest {
 
@@ -79,7 +77,25 @@ public class RepositorioDePareceresTest {
      */
     private List<Nota> getListaDeNotasDoParecer() {
         List<Nota> listaDeNotas = new ArrayList<>();
+        listaDeNotas.add(new Nota(
+                new Pontuacao("aprovadoProm", new Valor(false)),
+                new Pontuacao("aprovadoProm", new Valor(true)),
+                "Alteração realizada porque um cálculo tinha sido feito de maneira errada."
+        ));
+
         return listaDeNotas;
+    }
+
+    /**
+     * Recupera uma Nota qualquer a ser adicionada a um Parecer.
+     * @return A nota a ser adicionada a um Parecer.
+     */
+    private Nota getSampleNota() {
+        return new Nota(
+                new Pontuacao("nomeAtributo", new Valor("valor")),
+                new Pontuacao("nomeAtributo", new Valor("novoValor")),
+                "justificativa alteração"
+        );
     }
 
     /*
@@ -148,13 +164,11 @@ public class RepositorioDePareceresTest {
 
     @Test
     public void persisteParecerValido() {
-        Parecer parecer = getParecerValido(UUID.randomUUID().toString());
-        repositorioDePareceres.persisteParecer(parecer);
-    }
+        String id = UUID.randomUUID().toString();
+        repositorioDePareceres.persisteParecer(getParecerValido(id));
 
-    @Test
-    public void persisteParecerValidoComNotas() {
-
+        Parecer parecer = repositorioDePareceres.byId(id);
+        assertNotNull("parecer não deve ser null", parecer);
     }
 
     @Test
@@ -167,7 +181,6 @@ public class RepositorioDePareceresTest {
         assertEquals("resolucao deve ser igual", "CONSUNI No 32/2013", parecer.getResolucao());
         assertEquals("deve possuir 1 radoc", 1, parecer.getRadocs().size());
         assertEquals("fundamentacao deve ser igual", "Fundamentação do parecer", parecer.getFundamentacao());
-        assertEquals("deve possuir 0 notas", 0, parecer.getNotas().size());
         assertEquals("deve possuir 3 pontuacoes", 3, parecer.getPontuacoes().size());
         assertNotNull("as pontuacoes não devem ser null", parecer.getPontuacoes().get(0));
         assertNotNull("as pontuacoes não devem ser null", parecer.getPontuacoes().get(1));
@@ -178,8 +191,66 @@ public class RepositorioDePareceresTest {
         assertThat("o valor da pontuacao 0 deve coincidir", parecer.getPontuacoes().get(0).getValor().getFloat(), is((float) 150));
         assertThat("o valor da pontuacao 1 deve coincidir", parecer.getPontuacoes().get(1).getValor().getFloat(), is((float) 560));
         assertThat("o valor da pontuacao 2 deve coincidir", parecer.getPontuacoes().get(2).getValor().getBoolean(), is(false));
-        //assertThat("o valor da pontuacao 0 deve coincidir pelo método get", parecer.getPontuacoes().get(0).get("pontosAPGrad"), is((float) 150));
-        //assertThat("o valor da pontuacao 1 deve coincidir pelo método get", parecer.getPontuacoes().get(1).get("pontosAPGrad"), is((float) 560));
-        //assertThat("o valor da pontuacao 2 deve coincidir pelo método get", parecer.getPontuacoes().get(2).get("pontosAPGrad"), is(false);
+        assertNotNull("o get do item Avaliavel 0 não pode ser null", parecer.getPontuacoes().get(0).get("pontosAPGrad"));
+        assertNotNull("o get do item Avaliavel 1 não pode ser null", parecer.getPontuacoes().get(1).get("pontosAEADGrad"));
+        assertNotNull("o get do item Avaliavel 2 não pode ser null", parecer.getPontuacoes().get(2).get("aprovadoProm"));
+        assertNull("o get do item Avaliavel 0 deve ser null caso o atributo não exista", parecer.getPontuacoes().get(0).get("atributoInexistente"));
+        assertThat("o valor da pontuacao 0 deve coincidir pelo método get da interface Avaliavel", parecer.getPontuacoes().get(0).get("pontosAPGrad").getFloat(), is((float) 150));
+        assertThat("o valor da pontuacao 1 deve coincidir pelo método get da interface Avaliavel", parecer.getPontuacoes().get(1).get("pontosAEADGrad").getFloat(), is((float) 560));
+        assertThat("o valor da pontuacao 2 deve coincidir pelo método get da interface Avaliavel", parecer.getPontuacoes().get(2).get("aprovadoProm").getBoolean(), is(false));
+        assertEquals("o tamanho da lista de notas deve ser igual a 1", 1, parecer.getNotas().size());
+        assertEquals("o valor do item original de Notas[0] deve coincidir", false, parecer.getNotas().get(0).getItemOriginal().get("aprovadoProm").getBoolean());
+        assertEquals("o valor do item alterado de Notas[0] deve coincidir", true, parecer.getNotas().get(0).getItemNovo().get("aprovadoProm").getBoolean());
+        assertEquals("a justificativa de Notas[0] deve coincidir", "Alteração realizada porque um cálculo tinha sido feito de maneira errada.", parecer.getNotas().get(0).getJustificativa());
+    }
+
+    @Test
+    public void adicionaNotaEmParecerInexistente() {
+        thrown.expect(IdentificadorDesconhecido.class);
+        thrown.expectMessage("id desconhecido");
+
+        String parecerId = "id inexistente";
+        repositorioDePareceres.adicionaNota(
+                parecerId,
+                new Nota(
+                        new Pontuacao("nome", new Valor("valor")),
+                        new Pontuacao("nome", new Valor("novoValor")),
+                        "justificativa"
+                )
+        );
+    }
+
+    @Test
+    public void adicionaNota() {
+        String parecerId = UUID.randomUUID().toString();
+        repositorioDePareceres.persisteParecer(getParecerValido(parecerId));
+
+        repositorioDePareceres.adicionaNota(
+                parecerId,
+                getSampleNota()
+        );
+
+        Parecer parecer = repositorioDePareceres.byId(parecerId);
+        assertEquals("id deve coincidir", parecerId, parecer.getId());
+        assertNotNull("lista de notas deve ser diferente de null", parecer.getNotas());
+        assertEquals("lista de notas deve ter tamanho 2", 2, parecer.getNotas().size());
+        assertEquals("justificativa da Nota 0 deve coincidir", "Alteração realizada porque um cálculo tinha sido feito de maneira errada.", parecer.getNotas().get(0).getJustificativa());
+        assertEquals("valor original para o atributo ('nomeAtributo') da Nota 0 deve coincidir", false, parecer.getNotas().get(0).getItemOriginal().get("aprovadoProm").getBoolean());
+        assertEquals("novo valor para o atributo ('nomeAtributo') da Nota 0 deve coincidir", true, parecer.getNotas().get(0).getItemNovo().get("aprovadoProm").getBoolean());
+        assertEquals("justificativa da Nota 1 deve coincidir", "justificativa alteração", parecer.getNotas().get(1).getJustificativa());
+        assertEquals("valor original para o atributo ('nomeAtributo') da Nota 1 deve coincidir", "valor", parecer.getNotas().get(1).getItemOriginal().get("nomeAtributo").getString());
+        assertEquals("novo valor para o atributo ('nomeAtributo') da Nota 1 deve coincidir", "novoValor", parecer.getNotas().get(1).getItemNovo().get("nomeAtributo").getString());
+    }
+
+    @Test
+    public void removeNotaEmParecerInexistente() {
+        thrown.expect(IdentificadorDesconhecido.class);
+        thrown.expectMessage("id desconhecido");
+
+        String parecerId = "id inexistente";
+        repositorioDePareceres.removeNota(
+                parecerId,
+                new Pontuacao("nome", new Valor("valor"))
+        );
     }
 }

@@ -1,6 +1,7 @@
 package br.ufg.inf.es.saep.sandbox.persistencia;
 
 import br.ufg.inf.es.saep.sandbox.dominio.*;
+import br.ufg.inf.es.saep.sandbox.persistencia.adapters.InterfaceAvaliavelAdapter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.mongodb.client.MongoCollection;
@@ -30,7 +31,11 @@ public class RepositorioDePareceres implements ParecerRepository {
      * em um momento posterior.
      */
     public RepositorioDePareceres() {
-        this.gson = new GsonBuilder().serializeNulls().setPrettyPrinting().create();
+        this.gson = new GsonBuilder()
+                .registerTypeAdapter(Avaliavel.class, new InterfaceAvaliavelAdapter())
+                .serializeNulls()
+                .setPrettyPrinting()
+                .create();
         this.database = new DBManager("saep-sandbox");
     }
 
@@ -39,7 +44,18 @@ public class RepositorioDePareceres implements ParecerRepository {
      */
     @Override
     public void adicionaNota(String id, Nota nota) {
+        MongoCollection pareceresCollection = database.abrirConexao("pareceres");
 
+        if (byId(id) == null) {
+            throw new IdentificadorDesconhecido("id desconhecido");
+        }
+
+        Document notaDocument = Document.parse(gson.toJson(nota));
+
+        pareceresCollection.updateOne(
+                new Document("_id", id),
+                new Document("$push", new Document("notas", notaDocument))
+        );
     }
 
     /**
@@ -47,7 +63,11 @@ public class RepositorioDePareceres implements ParecerRepository {
      */
     @Override
     public void removeNota(String id, Avaliavel original) {
+        MongoCollection pareceresCollection = database.abrirConexao("pareceres");
 
+        if (byId(id) == null) {
+            throw new IdentificadorDesconhecido("id desconhecido");
+        }
     }
 
     /**
