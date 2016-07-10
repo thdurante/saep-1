@@ -1,11 +1,8 @@
 package br.ufg.inf.es.saep.sandbox.persistencia;
 
-import br.ufg.inf.es.saep.sandbox.dominio.Nota;
-import br.ufg.inf.es.saep.sandbox.dominio.Parecer;
-import br.ufg.inf.es.saep.sandbox.dominio.Pontuacao;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
+import br.ufg.inf.es.saep.sandbox.dominio.*;
+import org.junit.*;
+import org.junit.rules.ExpectedException;
 import uk.co.jemos.podam.api.PodamFactory;
 import uk.co.jemos.podam.api.PodamFactoryImpl;
 
@@ -22,6 +19,10 @@ public class RepositorioDePareceresTest {
     * PRIVATE METHODS
     * */
 
+    /**
+     * Recupera um Parecer válido.
+     * @return Um parecer válido.
+     */
     private Parecer getParecerValido() {
         String id = UUID.randomUUID().toString();
         return new Parecer(
@@ -40,6 +41,7 @@ public class RepositorioDePareceresTest {
      */
     private List<String> getListaDeRadocsUtilizadosNoParecer() {
         List<String> listaDeRadocs = new ArrayList<>();
+        listaDeRadocs.add(UUID.randomUUID().toString());
 
         return listaDeRadocs;
     }
@@ -50,6 +52,18 @@ public class RepositorioDePareceresTest {
      */
     private List<Pontuacao> getListaDePontuacoesObtidasPeloParecer() {
         List<Pontuacao> listaDePontuacoes = new ArrayList<>();
+        listaDePontuacoes.add(new Pontuacao(
+                "pontosAPGrad",     // nome
+                new Valor(150)      // valor
+        ));
+        listaDePontuacoes.add(new Pontuacao(
+                "pontosAEADGrad",   // nome
+                new Valor(560)      // valor
+        ));
+        listaDePontuacoes.add(new Pontuacao(
+                "aprovadoProm",     // nome
+                new Valor(true)     // valor
+        ));
 
         return listaDePontuacoes;
     }
@@ -68,6 +82,9 @@ public class RepositorioDePareceresTest {
     * TESTS
     * */
 
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
+
     @Before
     public void setUp() {
         this.repositorioDePareceres = new RepositorioDePareceres();
@@ -80,7 +97,45 @@ public class RepositorioDePareceresTest {
     }
 
     @Test
-    public void persisteParecerValido() {
+    public void criaPontuacaoSemNome() {
+        thrown.expect(CampoExigidoNaoFornecido.class);
+        thrown.expectMessage("nome");
+        new Pontuacao("", new Valor(12));
+    }
 
+    @Test
+    public void criaPontuacaoSemValor() {
+        thrown.expect(CampoExigidoNaoFornecido.class);
+        thrown.expectMessage("valor");
+        new Pontuacao("nome", null);
+    }
+
+    @Test
+    public void criaNotaSemOrigem() {
+        thrown.expect(CampoExigidoNaoFornecido.class);
+        thrown.expectMessage("origem");
+        new Nota(null, new Pontuacao("nome", new Valor("valor")), "justificativa");
+    }
+
+    @Test
+    public void criaNotaSemDestino() {
+        thrown.expect(CampoExigidoNaoFornecido.class);
+        thrown.expectMessage("destino");
+        new Nota(new Pontuacao("nome", new Valor("valor")), null, "justificativa");
+
+    }
+
+    @Test
+    public void criaNotaSemJustificativa() {
+        thrown.expect(CampoExigidoNaoFornecido.class);
+        thrown.expectMessage("justificativa");
+        new Nota(new Pontuacao("nome", new Valor("valor")), new Pontuacao("nome", new Valor("valor")), null);
+    }
+
+    @Test
+    @Ignore
+    public void persisteParecerValido() {
+        Parecer parecer = getParecerValido();
+        repositorioDePareceres.persisteParecer(parecer);
     }
 }
