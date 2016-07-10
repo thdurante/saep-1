@@ -139,7 +139,10 @@ public class RepositorioDePareceres implements ParecerRepository {
      */
     @Override
     public void removeParecer(String id) {
-
+        MongoCollection pareceresCollection = database.abrirConexao("pareceres");
+        pareceresCollection.deleteOne(
+                new Document("_id", id)
+        );
     }
 
     /**
@@ -169,8 +172,11 @@ public class RepositorioDePareceres implements ParecerRepository {
     /**
      * Método chamado no tearDown dos testes para limpar a base de dados.
      */
-    public void clearDB() {
-        //pareceresCollection.deleteMany(new Document());
-        //radocsCollection.deleteMany(new Document());
+    public static void clearDB() {
+        MongoCollection pareceresCollection = new DBManager("saep-sandbox").abrirConexao("pareceres");
+        pareceresCollection.deleteMany(new Document());
+
+        MongoCollection radocsCollection = new DBManager("saep-sandbox").abrirConexao("radocs");
+        radocsCollection.deleteMany(new Document());
     }
 }

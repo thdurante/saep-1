@@ -113,7 +113,7 @@ public class RepositorioDePareceresTest {
 
     @AfterClass
     public static void tearDown() {
-        new RepositorioDeResolucoes().clearDB();
+        // RepositorioDePareceres.clearDB();
     }
 
     @Test
@@ -311,5 +311,28 @@ public class RepositorioDePareceresTest {
         // Recupera parecer depois da atualização da fundamentação
         parecer = repositorioDePareceres.byId(parecerId);
         assertEquals("fundamentacao depois da atualização deve coincidir", "Nova fundamentação", parecer.getFundamentacao());
+    }
+
+    @Test
+    public void removeParecer() {
+        Parecer parecer;
+
+        // Cria e persiste um parecer
+        String parecerId = UUID.randomUUID().toString();
+        repositorioDePareceres.persisteParecer(getParecerValido(parecerId));
+
+        // Recupera parecer por ID antes da remoção
+        parecer = repositorioDePareceres.byId(parecerId);
+        assertNotNull("parecer recuperado por ID antes da remoção não deve ser null", parecer);
+
+        // Remove parecer
+        repositorioDePareceres.removeParecer(parecerId);
+
+        // Recupera parecer por ID depois da remoção
+        parecer = repositorioDePareceres.byId(parecerId);
+        assertNull("parecer recuperado por ID depois da remoção deve ser null", parecer);
+
+        // Remove parecer que não existe
+        repositorioDePareceres.removeParecer("id de um parecer que não existe");
     }
 }
