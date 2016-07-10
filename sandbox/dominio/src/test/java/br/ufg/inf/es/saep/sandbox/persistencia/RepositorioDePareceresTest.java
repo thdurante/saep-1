@@ -222,15 +222,21 @@ public class RepositorioDePareceresTest {
 
     @Test
     public void adicionaNota() {
+        Parecer parecer;
+
         String parecerId = UUID.randomUUID().toString();
         repositorioDePareceres.persisteParecer(getParecerValido(parecerId));
+
+        parecer = repositorioDePareceres.byId(parecerId);
+        assertNotNull("lista de notas antes da iserção deve ser diferente de null", parecer.getNotas());
+        assertEquals("lista de notas antes da inserção deve ter tamanho 1", 1, parecer.getNotas().size());
 
         repositorioDePareceres.adicionaNota(
                 parecerId,
                 getSampleNota()
         );
 
-        Parecer parecer = repositorioDePareceres.byId(parecerId);
+        parecer = repositorioDePareceres.byId(parecerId);
         assertEquals("id deve coincidir", parecerId, parecer.getId());
         assertNotNull("lista de notas deve ser diferente de null", parecer.getNotas());
         assertEquals("lista de notas deve ter tamanho 2", 2, parecer.getNotas().size());
