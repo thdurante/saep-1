@@ -4,6 +4,10 @@ import br.ufg.inf.es.saep.sandbox.dominio.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
+import org.bson.Document;
+
+import static com.mongodb.client.model.Filters.eq;
 
 /**
  * Classe que representa o repositório de Pareceres.
@@ -11,14 +15,9 @@ import com.mongodb.client.MongoCollection;
 public class RepositorioDePareceres implements ParecerRepository {
 
     /**
-     * Representação da collection Pareceres advinda do banco de dados.
+     * Representação da base de dados.
      */
-    private MongoCollection pareceresCollection;
-
-    /**
-     * Representação da collection Radocs advinda do banco de dados.
-     */
-    private MongoCollection radocsCollection;
+    private DBManager database;
 
     /**
      * Objeto para serialização e parse de documentos JSON.
@@ -32,6 +31,7 @@ public class RepositorioDePareceres implements ParecerRepository {
      */
     public RepositorioDePareceres() {
         this.gson = new GsonBuilder().serializeNulls().setPrettyPrinting().create();
+        this.database = new DBManager("saep-sandbox");
     }
 
     /**
@@ -55,7 +55,17 @@ public class RepositorioDePareceres implements ParecerRepository {
      */
     @Override
     public void persisteParecer(Parecer parecer) {
+        MongoCollection pareceresCollection = database.abrirConexao("pareceres");
 
+        if (byId(parecer.getId()) != null) {
+            throw new IdentificadorExistente("já persistido");
+        }
+
+        Document parecerDocument = Document.parse(gson.toJson(parecer));
+        parecerDocument.put("_id", parecerDocument.get("id"));
+        parecerDocument.remove("id");
+
+        pareceresCollection.insertOne(parecerDocument);
     }
 
     /**
@@ -71,7 +81,21 @@ public class RepositorioDePareceres implements ParecerRepository {
      */
     @Override
     public Parecer byId(String id) {
-        return null;
+        MongoCollection pareceresCollection = database.abrirConexao("pareceres");
+        Document document = null;
+
+        MongoCursor cursor = pareceresCollection.find(eq("_id", id)).iterator();
+        if (!cursor.hasNext()) {
+            return null;
+        }
+
+        while (cursor.hasNext()) {
+            document = (Document) cursor.next();
+            document.put("id", document.get("_id").toString());
+            document.remove("_id");
+        }
+
+        return gson.fromJson(document.toJson(), Parecer.class);
     }
 
     /**
