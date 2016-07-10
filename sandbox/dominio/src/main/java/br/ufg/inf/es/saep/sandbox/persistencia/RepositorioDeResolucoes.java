@@ -39,8 +39,8 @@ public class RepositorioDeResolucoes implements ResolucaoRepository {
      * banco de dados e inicializando o serializador/parser Gson.
      */
     public RepositorioDeResolucoes() {
-        this.resolucoesCollection = new DBManager("resolucoes").abrirConexao();
-        this.tiposCollection = new DBManager("tipos").abrirConexao();
+        this.resolucoesCollection = new DBManager("saep-sandbox").abrirConexao("resolucoes");
+        this.tiposCollection = new DBManager("saep-sandbox").abrirConexao("tipos");
         this.gson = new GsonBuilder().serializeNulls().setPrettyPrinting().create();
     }
 

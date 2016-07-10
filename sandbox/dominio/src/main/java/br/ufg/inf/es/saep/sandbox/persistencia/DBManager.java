@@ -17,29 +17,28 @@ public class DBManager {
      */
     private final String servidor = "server.thiagodurante.com.br";
     private final int porta = 27017;
-    private final String database = "saep-sandbox";
 
     /**
-     * Identificador da Collection a ser recuperada.
+     * Identificador da base de dados.
      */
-    private String collectionName;
+    private String database;
 
     /**
      * Retorna uma nova instância de DBManager.
-     * @param collection O nome da Collection a ser recuperada.
+     * @param database O nome da base de dados.
      */
-    public DBManager(String collection) {
-        this.collectionName = collection;
+    public DBManager(String database) {
+        this.database = database;
     }
 
     /**
      * Abre uma conexão com o servidor de banco de dados e retorna a Collection desejada.
      * @return A collection identificada pela nome informado no construtor.
      */
-    public MongoCollection abrirConexao () {
+    public MongoCollection abrirConexao (String collection) {
         MongoClient mongoClient = new MongoClient(new ServerAddress(servidor, porta));
         MongoDatabase db = mongoClient.getDatabase(database);
 
-        return db.getCollection(collectionName);
+        return db.getCollection(collection);
     }
 }
