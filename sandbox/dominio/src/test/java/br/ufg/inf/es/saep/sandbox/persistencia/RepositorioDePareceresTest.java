@@ -447,12 +447,15 @@ public class RepositorioDePareceresTest {
         assertThat("relatos[0].get('Ano') do radoc recuperado deve coincidir", radocRecuperado.getRelatos().get(0).get("Ano").getFloat(), is((float) 2016));
         assertThat("relatos[0].get('Semestre') do radoc recuperado deve coincidir", radocRecuperado.getRelatos().get(0).get("Semestre").getFloat(), is((float) 1));
         assertEquals("relatos[0].get('Turma') do radoc recuperado deve coincidir", "A", radocRecuperado.getRelatos().get(0).get("Turma").getString());
+        assertEquals("relatos[0].getVariaveis().size() do radoc recuperado deve coincidir", 6, radocRecuperado.getRelatos().get(0).getVariaveis().size());
 
         assertEquals("relatos[1].get('Descrição do Produto') do radoc recuperado deve coincidir", "Trabalho publico em anais de congresso científico", radocRecuperado.getRelatos().get(1).get("Descrição do Produto").getString());
         assertEquals("relatos[1].get('Título do Produto') do radoc recuperado deve coincidir", "Monitoramento de Paisagens Urbanas com Redes de Sensores", radocRecuperado.getRelatos().get(1).get("Título do Produto").getString());
         assertEquals("relatos[1].get('Autoria') do radoc recuperado deve coincidir", "Autor", radocRecuperado.getRelatos().get(1).get("Autoria").getString());
         assertThat("relatos[1].get('Ano de publicação') do radoc recuperado deve coincidir", radocRecuperado.getRelatos().get(1).get("Ano de publicação").getFloat(), is((float) 2013));
         assertThat("relatos[1].get('Número de páginas') do radoc recuperado deve coincidir", radocRecuperado.getRelatos().get(1).get("Número de páginas").getFloat(), is((float) 342));
+        assertEquals("relatos[1].getVariaveis().size() do radoc recuperado deve coincidir", 5, radocRecuperado.getRelatos().get(1).getVariaveis().size());
+
     }
 
     @Test
