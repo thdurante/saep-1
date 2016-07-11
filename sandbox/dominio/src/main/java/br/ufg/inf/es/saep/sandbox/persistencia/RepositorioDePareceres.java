@@ -8,6 +8,8 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import org.bson.Document;
 
+import java.util.List;
+
 import static com.mongodb.client.model.Filters.eq;
 
 /**
@@ -140,9 +142,7 @@ public class RepositorioDePareceres implements ParecerRepository {
     @Override
     public void removeParecer(String id) {
         MongoCollection pareceresCollection = database.abrirConexao("pareceres");
-        pareceresCollection.deleteOne(
-                new Document("_id", id)
-        );
+        pareceresCollection.deleteOne(new Document("_id", id));
     }
 
     /**
@@ -192,7 +192,40 @@ public class RepositorioDePareceres implements ParecerRepository {
      */
     @Override
     public void removeRadoc(String identificador) {
+        MongoCollection radocsCollection = database.abrirConexao("radocs");
 
+        verificaSeRadocReferenciadoPorParecer(identificador); // Se for referenciado, a exception já é lançada
+        radocsCollection.deleteOne(new Document("_id", identificador));
+    }
+
+    // TODO: verificar se é, de fato, pra lançar alguma exception na remoção de Radoc Referenciado por Parecer e tratar o caso
+    /**
+     * Recupera a lista de Pareceres e verifica para cada um deles se a
+     * lista de radocs contém o identificador do Radoc que se deseja remover.
+     * <p>Caso algum {@link Parecer} possua em sua lista de radocs referenciados,
+     * o identificado do Radoc que se deseja Remover, então uma exception
+     * ParecerReferenciaRadocException é lançada.</p>
+     * @param identificador
+     */
+    private void verificaSeRadocReferenciadoPorParecer(String identificador) {
+        MongoCollection pareceresCollection = database.abrirConexao("pareceres");
+        Document document;
+        Parecer parecer;
+
+        MongoCursor cursor = pareceresCollection.find().iterator();
+        while (cursor.hasNext()) {
+            document = (Document) cursor.next();
+            document.put("id", document.get("_id").toString());
+            document.remove("_id");
+            parecer = gson.fromJson(document.toJson(), Parecer.class);
+
+            List<String> listaDeRadocsReferenciados = parecer.getRadocs();
+            for (String idRadoc : listaDeRadocsReferenciados) {
+                if (identificador.equals(idRadoc)) {
+                    //throw new ParecerReferenciaRadocException("O Parecer [ID: " +parecer.getId() + "] referencia o Radoc.");
+                }
+            }
+        }
     }
 
     /**

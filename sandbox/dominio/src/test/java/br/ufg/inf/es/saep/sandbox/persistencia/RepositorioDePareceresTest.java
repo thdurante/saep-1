@@ -159,6 +159,7 @@ public class RepositorioDePareceresTest {
 
     @AfterClass
     public static void tearDown() {
+        // TODO: limpar a base de dados depois de rodado a suite de testes
         // RepositorioDePareceres.clearDB();
     }
 
@@ -441,5 +442,19 @@ public class RepositorioDePareceresTest {
     public void recuperaRadocByIdInvalido() {
         Radoc radocRecuperado = repositorioDePareceres.radocById("id que não existe");
         assertNull("radoc recuperado com id invalido deve ser null", radocRecuperado);
+    }
+
+    // TODO: implementar testes para remoção de Radoc - NÃO REFERENCIADO
+    @Test
+    @Ignore
+    public void removeRadocSemReferenciaAlguma() {
+
+    }
+
+    // TODO: implementar testes para remoção de Radoc - REFERENCIADO POR PARECER
+    @Test
+    @Ignore
+    public void removeRadocReferenciadoPorParecer() {
+
     }
 }
