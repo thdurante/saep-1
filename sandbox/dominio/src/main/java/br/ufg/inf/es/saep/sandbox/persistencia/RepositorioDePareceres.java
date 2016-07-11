@@ -198,14 +198,13 @@ public class RepositorioDePareceres implements ParecerRepository {
         radocsCollection.deleteOne(new Document("_id", identificador));
     }
 
-    // TODO: verificar se é, de fato, pra lançar alguma exception na remoção de Radoc Referenciado por Parecer e tratar o caso
     /**
      * Recupera a lista de Pareceres e verifica para cada um deles se a
      * lista de radocs contém o identificador do Radoc que se deseja remover.
      * <p>Caso algum {@link Parecer} possua em sua lista de radocs referenciados,
      * o identificado do Radoc que se deseja Remover, então uma exception
-     * ParecerReferenciaRadocException é lançada.</p>
-     * @param identificador
+     * {@link ExisteParecerReferenciandoRadoc} é lançada.</p>
+     * @param identificador O identificador único do Radoc.
      */
     private void verificaSeRadocReferenciadoPorParecer(String identificador) {
         MongoCollection pareceresCollection = database.abrirConexao("pareceres");
@@ -222,7 +221,7 @@ public class RepositorioDePareceres implements ParecerRepository {
             List<String> listaDeRadocsReferenciados = parecer.getRadocs();
             for (String idRadoc : listaDeRadocsReferenciados) {
                 if (identificador.equals(idRadoc)) {
-                    //throw new ParecerReferenciaRadocException("O Parecer [ID: " +parecer.getId() + "] referencia o Radoc.");
+                    throw new ExisteParecerReferenciandoRadoc("Existe Parecer referenciando o Radoc.");
                 }
             }
         }

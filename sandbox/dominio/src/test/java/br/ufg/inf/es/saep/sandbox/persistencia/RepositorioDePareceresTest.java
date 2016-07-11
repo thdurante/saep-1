@@ -144,6 +144,23 @@ public class RepositorioDePareceresTest {
         return listaDeRelatos;
     }
 
+    /**
+     * Recupera um Parecer que referencia Radocs específicos.
+     * @param parecerId Identificador único do Parecer.
+     * @param idsRadocsReferenciados Lista com os ids dos Radocs referenciados.
+     * @return Uma instância de Parecer que referencia Radocs específicos.
+     */
+    private Parecer getParecerQueReferenciaUmRadocEspecífico(String parecerId, List<String> idsRadocsReferenciados) {
+        return new Parecer(
+                parecerId,                                      // id
+                "CONSUNI No 32/2013",                           // resolucaoId
+                idsRadocsReferenciados,                         // radocsIds
+                getListaDePontuacoesObtidasPeloParecer(),       // pontuacoes
+                "Fundamentação do parecer",                     // fundamentacao
+                getListaDeNotasDoParecer()                      // notas
+        );
+    }
+
     /*
     * TESTS
     * */
@@ -444,17 +461,34 @@ public class RepositorioDePareceresTest {
         assertNull("radoc recuperado com id invalido deve ser null", radocRecuperado);
     }
 
-    // TODO: implementar testes para remoção de Radoc - NÃO REFERENCIADO
     @Test
-    @Ignore
     public void removeRadocSemReferenciaAlguma() {
+        Radoc radocRecuperado;
 
+        String radocId = UUID.randomUUID().toString();
+        String returnedId = repositorioDePareceres.persisteRadoc(getRadocValido(radocId));
+        repositorioDePareceres.persisteParecer(getParecerValido(UUID.randomUUID().toString()));
+        radocRecuperado = repositorioDePareceres.radocById(returnedId);
+        assertNotNull("o radoc recuperado antes da remoção não deve ser null", radocRecuperado);
+
+        repositorioDePareceres.removeRadoc(returnedId);
+        radocRecuperado = repositorioDePareceres.radocById(returnedId);
+        assertNull("o radoc recuperado depois da remoção deve ser null", radocRecuperado);
     }
 
-    // TODO: implementar testes para remoção de Radoc - REFERENCIADO POR PARECER
     @Test
-    @Ignore
     public void removeRadocReferenciadoPorParecer() {
+        thrown.expect(ExisteParecerReferenciandoRadoc.class);
+        thrown.expectMessage("Existe Parecer referenciando o Radoc.");
 
+        String radocId = UUID.randomUUID().toString();
+        String returnedId = repositorioDePareceres.persisteRadoc(getRadocValido(radocId));
+        String parecerId = UUID.randomUUID().toString();
+        List<String> listaDeRadocsReferenciados = new ArrayList<>();
+        listaDeRadocsReferenciados.add(returnedId);
+        Parecer parecer = getParecerQueReferenciaUmRadocEspecífico(parecerId, listaDeRadocsReferenciados);
+        repositorioDePareceres.persisteParecer(parecer);
+
+        repositorioDePareceres.removeRadoc(returnedId);
     }
 }
