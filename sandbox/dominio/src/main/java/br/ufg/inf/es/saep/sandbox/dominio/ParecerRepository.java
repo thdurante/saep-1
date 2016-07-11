@@ -20,7 +20,9 @@ package br.ufg.inf.es.saep.sandbox.dominio;
 public interface ParecerRepository {
 
     /**
-     * Adiciona nota ao parecer.
+     * Adiciona nota ao parecer. Caso a nota a ser acrescentada
+     * se refira a um item {@link Avaliavel} para o qual já
+     * exista uma nota, então a corrente substitui a anterior.
      *
      * @throws IdentificadorDesconhecido Caso o identificador
      * fornecido não identifique um parecer existente.
@@ -135,6 +137,10 @@ public interface ParecerRepository {
      *
      * <p>Não é permitida a remoção de um RADOC para o qual
      * há pelo menos um parecer referenciando-o.
+     *
+     * @throws ExisteParecerReferenciandoRadoc Caso exista pelo
+     * menos um parecer que faz referência para o RADOC cuja
+     * remoção foi requisitada.
      *
      * @param identificador O identificador do RADOC.
      */
