@@ -150,7 +150,22 @@ public class RepositorioDePareceres implements ParecerRepository {
      */
     @Override
     public Radoc radocById(String identificador) {
-        return null;
+        MongoCollection radocsCollection = database.abrirConexao("radocs");
+
+        Document document = null;
+
+        MongoCursor cursor = radocsCollection.find(eq("_id", identificador)).iterator();
+        if (!cursor.hasNext()) {
+            return null;
+        }
+
+        while (cursor.hasNext()) {
+            document = (Document) cursor.next();
+            document.put("id", document.get("_id").toString());
+            document.remove("_id");
+        }
+
+        return gson.fromJson(document.toJson(), Radoc.class);
     }
 
     /**
@@ -158,7 +173,18 @@ public class RepositorioDePareceres implements ParecerRepository {
      */
     @Override
     public String persisteRadoc(Radoc radoc) {
-        return null;
+        MongoCollection radocsCollection = database.abrirConexao("radocs");
+
+        if (byId(radoc.getId()) != null) {
+            throw new IdentificadorExistente("já persistido");
+        }
+
+        Document radocDocument = Document.parse(gson.toJson(radoc));
+        radocDocument.put("_id", radocDocument.get("id"));
+        radocDocument.remove("id");
+
+        radocsCollection.insertOne(radocDocument);
+        return radoc.getId();
     }
 
     /**

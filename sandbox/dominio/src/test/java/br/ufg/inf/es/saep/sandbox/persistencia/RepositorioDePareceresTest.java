@@ -1,15 +1,12 @@
 package br.ufg.inf.es.saep.sandbox.persistencia;
 
 import br.ufg.inf.es.saep.sandbox.dominio.*;
-import com.sun.tools.corba.se.idl.constExpr.Equal;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
 import uk.co.jemos.podam.api.PodamFactory;
 import uk.co.jemos.podam.api.PodamFactoryImpl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
@@ -25,7 +22,8 @@ public class RepositorioDePareceresTest {
 
     /**
      * Recupera um Parecer válido.
-     * @return Um parecer válido.
+     * @param id Id do Parecer.
+     * @return Parecer válido.
      */
     private Parecer getParecerValido(String id) {
         return new Parecer(
@@ -96,6 +94,54 @@ public class RepositorioDePareceresTest {
                 new Pontuacao("nomeAtributo", new Valor("novoValor")),
                 "justificativa alteração"
         );
+    }
+
+    /**
+     * Recupera um Radoc válido.
+     * @param id Id único do Radoc.
+     * @return Um Radoc válido.
+     */
+    private Radoc getRadocValido(String id) {
+        return new Radoc(
+                id,
+                2016,
+                getListaDeRelatosDoRadoc()
+        );
+    }
+
+    /**
+     * Recupera a lista de relatos de um dado Radoc.
+     * @return Lista de relatos do Radoc.
+     */
+    private List<Relato> getListaDeRelatosDoRadoc() {
+        List<Relato> listaDeRelatos = new ArrayList<>();
+
+        Map<String, Valor> valoresRelato1 = new HashMap<>();
+        valoresRelato1.put("Curso", new Valor("Engenharia de Software"));
+        valoresRelato1.put("Disciplina", new Valor("Banco de Dados"));
+        valoresRelato1.put("CHA", new Valor(64));
+        valoresRelato1.put("Ano", new Valor(2016));
+        valoresRelato1.put("Semestre", new Valor(1));
+        valoresRelato1.put("Turma", new Valor("A"));
+
+        listaDeRelatos.add(new Relato(
+                "AEGP",
+                valoresRelato1
+        ));
+
+        Map<String, Valor> valoresRelato2 = new HashMap<>();
+        valoresRelato2.put("Descrição do Produto", new Valor("Trabalho publico em anais de congresso científico"));
+        valoresRelato2.put("Título do Produto", new Valor("Monitoramento de Paisagens Urbanas com Redes de Sensores"));
+        valoresRelato2.put("Autoria", new Valor("Autor"));
+        valoresRelato2.put("Ano de publicação", new Valor(2013));
+        valoresRelato2.put("Número de páginas", new Valor(342));
+
+        listaDeRelatos.add(new Relato(
+                "PROD",
+                valoresRelato2
+        ));
+
+        return listaDeRelatos;
     }
 
     /*
@@ -334,5 +380,66 @@ public class RepositorioDePareceresTest {
 
         // Remove parecer que não existe
         repositorioDePareceres.removeParecer("id de um parecer que não existe");
+    }
+
+    @Test
+    public void criaRadocInvalidoSemId() {
+        thrown.expect(CampoExigidoNaoFornecido.class);
+        thrown.expectMessage("id");
+
+        new Radoc(null, 2016, getListaDeRelatosDoRadoc());
+    }
+
+    @Test
+    public void criaRadocInvalidoSemListaDeRelatos() {
+        thrown.expect(CampoExigidoNaoFornecido.class);
+        thrown.expectMessage("relatos");
+
+        new Radoc("id", 2016, null);
+    }
+
+    @Test
+    public void persisteRadoc() {
+        String radocId = UUID.randomUUID().toString();
+        String returnedId = repositorioDePareceres.persisteRadoc(getRadocValido(radocId));
+
+        assertEquals("id do radoc utilizado na criação e id retornado pelo método persiste deve coincidir", radocId, returnedId);
+
+        Radoc radocRecuperado = repositorioDePareceres.radocById(returnedId);
+        assertNotNull("radoc recuperado não deve ser null", radocRecuperado);
+    }
+
+    @Test
+    public void recuperaRadocById() {
+        String radocId = UUID.randomUUID().toString();
+        String returnedId = repositorioDePareceres.persisteRadoc(getRadocValido(radocId));
+
+        Radoc radocRecuperado = repositorioDePareceres.radocById(returnedId);
+
+        assertNotNull("radoc recuperado não deve ser null", radocRecuperado);
+        assertEquals("o id do radoc recuperado deve coincidir", returnedId,radocRecuperado.getId());
+        assertEquals("o ano base do radoc recuperado deve coincidir", 2016, radocRecuperado.getAnoBase());
+        assertEquals("o tamanho da lista de relatos do radoc recuperado deve coincidir", 2, radocRecuperado.getRelatos().size());
+        assertEquals("relatos[0].tipo do radoc recuperado deve coincidir", "AEGP", radocRecuperado.getRelatos().get(0).getTipo());
+        assertEquals("relatos[1].tipo do radoc recuperado deve coincidir", "PROD", radocRecuperado.getRelatos().get(1).getTipo());
+
+        assertEquals("relatos[0].get('Curso') do radoc recuperado deve coincidir", "Engenharia de Software", radocRecuperado.getRelatos().get(0).get("Curso").getString());
+        assertEquals("relatos[0].get('Disciplina') do radoc recuperado deve coincidir", "Banco de Dados", radocRecuperado.getRelatos().get(0).get("Disciplina").getString());
+        assertThat("relatos[0].get('CHA') do radoc recuperado deve coincidir", radocRecuperado.getRelatos().get(0).get("CHA").getFloat(), is((float) 64));
+        assertThat("relatos[0].get('Ano') do radoc recuperado deve coincidir", radocRecuperado.getRelatos().get(0).get("Ano").getFloat(), is((float) 2016));
+        assertThat("relatos[0].get('Semestre') do radoc recuperado deve coincidir", radocRecuperado.getRelatos().get(0).get("Semestre").getFloat(), is((float) 1));
+        assertEquals("relatos[0].get('Turma') do radoc recuperado deve coincidir", "A", radocRecuperado.getRelatos().get(0).get("Turma").getString());
+
+        assertEquals("relatos[1].get('Descrição do Produto') do radoc recuperado deve coincidir", "Trabalho publico em anais de congresso científico", radocRecuperado.getRelatos().get(1).get("Descrição do Produto").getString());
+        assertEquals("relatos[1].get('Título do Produto') do radoc recuperado deve coincidir", "Monitoramento de Paisagens Urbanas com Redes de Sensores", radocRecuperado.getRelatos().get(1).get("Título do Produto").getString());
+        assertEquals("relatos[1].get('Autoria') do radoc recuperado deve coincidir", "Autor", radocRecuperado.getRelatos().get(1).get("Autoria").getString());
+        assertThat("relatos[1].get('Ano de publicação') do radoc recuperado deve coincidir", radocRecuperado.getRelatos().get(1).get("Ano de publicação").getFloat(), is((float) 2013));
+        assertThat("relatos[1].get('Número de páginas') do radoc recuperado deve coincidir", radocRecuperado.getRelatos().get(1).get("Número de páginas").getFloat(), is((float) 342));
+    }
+
+    @Test
+    public void recuperaRadocByIdInvalido() {
+        Radoc radocRecuperado = repositorioDePareceres.radocById("id que não existe");
+        assertNull("radoc recuperado com id invalido deve ser null", radocRecuperado);
     }
 }
