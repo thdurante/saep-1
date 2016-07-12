@@ -32,14 +32,17 @@ public class RepositorioDePareceres implements ParecerRepository {
      * Cria um novo repositório de Pareceres e Radocs, já inicializando o
      * serializador/parser Gson. A conexão com o banco de dados será aberta
      * em um momento posterior.
+     * @param banco O nome do banco de dados.
+     * @param servidor O nome do servidor.
+     * @param porta A porta de conexão com o banco de dados.
      */
-    public RepositorioDePareceres() {
+    public RepositorioDePareceres(String banco, String servidor, int porta) {
         this.gson = new GsonBuilder()
                 .registerTypeAdapter(Avaliavel.class, new InterfaceAvaliavelAdapter())
                 .serializeNulls()
                 .setPrettyPrinting()
                 .create();
-        this.database = new DBManager("saep-sandbox");
+        this.database = new DBManager(banco, servidor, porta);
     }
 
     /**
@@ -237,10 +240,10 @@ public class RepositorioDePareceres implements ParecerRepository {
      * Método chamado no tearDown dos testes para limpar a base de dados.
      */
     public static void clearDB() {
-        MongoCollection pareceresCollection = new DBManager("saep-sandbox").abrirConexao("pareceres");
+        MongoCollection pareceresCollection = new DBManager("saep-sandbox", "server.thiagodurante.com.br",27017).abrirConexao("pareceres");
         pareceresCollection.deleteMany(new Document());
 
-        MongoCollection radocsCollection = new DBManager("saep-sandbox").abrirConexao("radocs");
+        MongoCollection radocsCollection = new DBManager("saep-sandbox", "server.thiagodurante.com.br", 27017).abrirConexao("radocs");
         radocsCollection.deleteMany(new Document());
     }
 }

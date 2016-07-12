@@ -170,7 +170,7 @@ public class RepositorioDePareceresTest {
 
     @Before
     public void setUp() {
-        this.repositorioDePareceres = new RepositorioDePareceres();
+        this.repositorioDePareceres = new RepositorioDePareceres("saep-sandbox", "server.thiagodurante.com.br", 27017);
         this.factory = new PodamFactoryImpl();
     }
 

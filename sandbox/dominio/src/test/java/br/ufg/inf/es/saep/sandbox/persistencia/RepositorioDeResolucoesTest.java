@@ -180,13 +180,13 @@ public class RepositorioDeResolucoesTest {
 
     @Before
     public void setUp() {
-        this.repositorioDeResolucoes = new RepositorioDeResolucoes();
+        this.repositorioDeResolucoes = new RepositorioDeResolucoes("saep-sandbox", "server.thiagodurante.com.br", 27017);
         this.factory = new PodamFactoryImpl();
     }
 
     @AfterClass
     public static void tearDown() {
-        new RepositorioDeResolucoes().clearDB();
+        new RepositorioDeResolucoes("saep-sandbox", "server.thiagodurante.com.br", 27017).clearDB();
     }
 
     @Test(expected = CampoExigidoNaoFornecido.class)

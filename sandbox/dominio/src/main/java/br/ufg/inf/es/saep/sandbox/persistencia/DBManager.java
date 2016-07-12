@@ -15,8 +15,8 @@ public class DBManager {
     /**
      * Informações do servidor.
      */
-    private final String servidor = "server.thiagodurante.com.br";
-    private final int porta = 27017;
+    private String servidor;
+    private int porta;
 
     /**
      * Identificador da base de dados.
@@ -26,9 +26,13 @@ public class DBManager {
     /**
      * Retorna uma nova instância de DBManager.
      * @param database O nome da base de dados.
+     * @param servidor O endereço do servidor.
+     * @param porta A porta de conexão com o servidor.
      */
-    public DBManager(String database) {
+    public DBManager(String database, String servidor, int porta) {
         this.database = database;
+        this.servidor = servidor;
+        this.porta = porta;
     }
 
     /**
