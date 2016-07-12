@@ -86,6 +86,10 @@ public class RepositorioDeResolucoes implements ResolucaoRepository {
             throw new CampoExigidoNaoFornecido("regras");
         }
 
+        if (byId(resolucao.getId()) != null) {
+            throw new IdentificadorExistente("id");
+        }
+
         Document resolucaoDocument = Document.parse(gson.toJson(resolucao));
 
         resolucaoDocument.put("_id", resolucaoDocument.get("id"));

@@ -84,10 +84,10 @@ public class RepositorioDeResolucoesTest {
     /**
      * Recupera uma Resolução válida, ou seja, que satisfaz a todas as condições
      * determinadas por seu construtor.
+     * @param id O identificador único da Resolução.
      * @return Resolução válida.
      */
-    private Resolucao getResolucaoValida() {
-        String id = UUID.randomUUID().toString();
+    private Resolucao getResolucaoValida(String id) {
         return new Resolucao(
                 id,
                 "CONSUNI No 32/2013",
@@ -267,16 +267,25 @@ public class RepositorioDeResolucoesTest {
         repositorioDeResolucoes.persiste(resolucao);
     }
 
+    @Test(expected = IdentificadorExistente.class)
+    public void persisteResolucaoComIdentificadorJaExistente() {
+        String id = UUID.randomUUID().toString();
+        repositorioDeResolucoes.persiste(getResolucaoValida(id));
+        repositorioDeResolucoes.persiste(getResolucaoValida(id));
+    }
+
     @Test
     public void persisteResolucaoValida() {
-        Resolucao resolucao = getResolucaoValida();
+        String id = UUID.randomUUID().toString();
+        Resolucao resolucao = getResolucaoValida(id);
         String identificador = repositorioDeResolucoes.persiste(resolucao);
         assertNotNull("id retornado não deve ser null", identificador);
     }
 
     @Test
     public void recuperaPorId() {
-        String id = repositorioDeResolucoes.persiste(getResolucaoValida());
+        String idGerado = UUID.randomUUID().toString();
+        String id = repositorioDeResolucoes.persiste(getResolucaoValida(idGerado));
         Resolucao resolucao = repositorioDeResolucoes.byId(id);
 
         assertNotNull("resolução retornada não deve ser null", resolucao);
@@ -310,7 +319,8 @@ public class RepositorioDeResolucoesTest {
 
     @Test
     public void removeResolucaoValida() {
-        String id = repositorioDeResolucoes.persiste(getResolucaoValida());
+        String idGerado = UUID.randomUUID().toString();
+        String id = repositorioDeResolucoes.persiste(getResolucaoValida(idGerado));
         Boolean resultadoRemocao = repositorioDeResolucoes.remove(id);
         assertEquals("deve ser true se a resolucao foi deletada", true, resultadoRemocao);
     }
