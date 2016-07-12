@@ -135,6 +135,10 @@ public class RepositorioDeResolucoes implements ResolucaoRepository {
      */
     @Override
     public void persisteTipo(Tipo tipo) {
+        if (tipoPeloCodigo(tipo.getId()) != null) {
+            throw new IdentificadorExistente("id");
+        }
+
         Document tipoDocument = Document.parse(gson.toJson(tipo));
         tiposCollection.insertOne(tipoDocument);
     }

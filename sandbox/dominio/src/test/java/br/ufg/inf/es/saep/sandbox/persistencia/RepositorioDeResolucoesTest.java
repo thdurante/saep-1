@@ -332,6 +332,12 @@ public class RepositorioDeResolucoesTest {
         assertEquals("deve ser false se a resolucao não foi deletada", false, resultadoRemocao);
     }
 
+    @Test(expected = IdentificadorExistente.class)
+    public void persisteTipoComIdJaPersistido() {
+        repositorioDeResolucoes.persisteTipo(getTipoValido1());
+        repositorioDeResolucoes.persisteTipo(getTipoValido1());
+    }
+
     @Test
     public void persisteTipoValido() {
         Tipo tipo1 = getTipoValido1();
