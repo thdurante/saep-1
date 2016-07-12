@@ -313,6 +313,54 @@ public class RepositorioDePareceresTest {
     }
 
     @Test
+    public void adicionaNotaEmAvaliavelQueJaPossuiNota() {
+        Parecer parecer;
+        Map<String, Valor> valoresRelatoVelho = new HashMap<>();
+        Map<String, Valor> valoresRelatoNovo = new HashMap<>();
+
+        // CRIA E PERSISTE UM PARECER COM DUAS NOTAS EM ITENS AVALIAVEIS DIFERENTES
+        String parecerId = UUID.randomUUID().toString();
+        repositorioDePareceres.persisteParecer(getParecerValido(parecerId));
+        valoresRelatoVelho.put("Curso", new Valor("Engenharia de Software"));
+        valoresRelatoNovo.put("Curso", new Valor("Ciência da Computação"));
+        repositorioDePareceres.adicionaNota(
+                parecerId,
+                new Nota(
+                        new Relato("COD", valoresRelatoVelho),
+                        new Relato("COD", valoresRelatoNovo),
+                        "Alterado o nome do curso para CC porque o digitador tinha errado."
+                )
+        );
+        // limpa valores pq vou reusar mais na frente
+        valoresRelatoNovo.remove("Curso");
+
+        // RECUPERA O PARECER ANTES DA INSERÇÃO DE NOTA EM AVALIAVEL QUE JÁ POSSUI NOTA
+        parecer = repositorioDePareceres.byId(parecerId);
+        assertNotNull("lista de notas antes da iserção deve ser diferente de null", parecer.getNotas());
+        assertEquals("lista de notas antes da inserção deve ter tamanho 2", 2, parecer.getNotas().size());
+        assertEquals("o item novo da nota deve ter valor true", "Ciência da Computação", parecer.getNotas().get(1).getItemNovo().get("Curso").getString());
+        assertEquals("a justificativa antes da adição da nova nota deve coincidir", "Alterado o nome do curso para CC porque o digitador tinha errado.", parecer.getNotas().get(1).getJustificativa());
+
+        // INSERE UMA TERCEIRA NOTA (AGORA EM UM ITEM AVALIAVEL QUE JÁ POSSUI NOTA)
+        valoresRelatoNovo.put("Curso", new Valor("Sistemas de Informação"));
+        repositorioDePareceres.adicionaNota(
+                parecerId,
+                new Nota(
+                        new Relato("COD", valoresRelatoVelho),
+                        new Relato("COD", valoresRelatoNovo),
+                        "Alterado o nome do curso para SI porque o digitador era burro e errou de novo."
+                )
+        );
+
+        // RECUPERA O PARECER DEPOIS DA INSERÇÃO DE NOTA EM AVALIAVEL QUE JÁ POSSUI NOTA
+        parecer = repositorioDePareceres.byId(parecerId);
+        assertNotNull("lista de notas depois da iserção deve ser diferente de null", parecer.getNotas());
+        assertEquals("lista de notas depois da inserção deve continuar com tamanho 2", 2, parecer.getNotas().size());
+        assertEquals("o item novo da nota deve ter valor coincidente", "Sistemas de Informação", parecer.getNotas().get(1).getItemNovo().get("Curso").getString());
+        assertEquals("a justificativa depois da adição da nova nota deve coincidir", "Alterado o nome do curso para SI porque o digitador era burro e errou de novo.", parecer.getNotas().get(1).getJustificativa());
+    }
+
+    @Test
     public void removeNotaEmParecerInexistente() {
         thrown.expect(IdentificadorDesconhecido.class);
         thrown.expectMessage("id desconhecido");
@@ -455,7 +503,6 @@ public class RepositorioDePareceresTest {
         assertThat("relatos[1].get('Ano de publicação') do radoc recuperado deve coincidir", radocRecuperado.getRelatos().get(1).get("Ano de publicação").getFloat(), is((float) 2013));
         assertThat("relatos[1].get('Número de páginas') do radoc recuperado deve coincidir", radocRecuperado.getRelatos().get(1).get("Número de páginas").getFloat(), is((float) 342));
         assertEquals("relatos[1].getVariaveis().size() do radoc recuperado deve coincidir", 5, radocRecuperado.getRelatos().get(1).getVariaveis().size());
-
     }
 
     @Test

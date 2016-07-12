@@ -10,6 +10,7 @@ import org.bson.Document;
 
 import java.util.List;
 
+import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
 
 /**
@@ -52,8 +53,13 @@ public class RepositorioDePareceres implements ParecerRepository {
             throw new IdentificadorDesconhecido("id desconhecido");
         }
 
-        Document notaDocument = Document.parse(gson.toJson(nota));
+        Document itemAvaliavelOriginalDocument = Document.parse(gson.toJson(nota.getItemOriginal()));
+        MongoCursor cursor = pareceresCollection.find(and(eq("_id", id), eq("notas.original", itemAvaliavelOriginalDocument))).iterator();
+        if (cursor.hasNext()) {
+            removeNota(id, nota.getItemOriginal());
+        }
 
+        Document notaDocument = Document.parse(gson.toJson(nota));
         pareceresCollection.updateOne(
                 new Document("_id", id),
                 new Document("$push", new Document("notas", notaDocument))
