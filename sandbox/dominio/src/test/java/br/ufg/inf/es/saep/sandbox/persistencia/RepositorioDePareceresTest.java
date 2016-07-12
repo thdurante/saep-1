@@ -176,8 +176,7 @@ public class RepositorioDePareceresTest {
 
     @AfterClass
     public static void tearDown() {
-        // TODO: limpar a base de dados depois de rodado a suite de testes
-        // RepositorioDePareceres.clearDB();
+        RepositorioDePareceres.clearDB();
     }
 
     @Test
